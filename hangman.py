@@ -119,6 +119,28 @@ def get_available_letters(letters_guessed):
 # for test_list in test_get_available_letters:
 #     print(get_available_letters(test_list))
 
+def is_letter_in_word(secret_word,user_guess):
+    '''
+    checks to see if users guess is in word
+    returns true if it is in the word
+    otherwise returns false
+    '''
+    if user_guess in secret_word:
+        return True
+    else:
+        return False
+def punishment(warnings,guesses):
+    '''
+    handles deducting points from warnings and guesses
+    #not sure i will actually use this will think about it
+    '''
+    if warnings > 0:
+        warnings -= 1
+        # do you need to print saying they lost a warning or a guess?
+    else:
+        guesses -= 1
+    return (warnings,guesses)
+
 def hangman(secret_word):
     '''
     secret_word: string, the secret word to guess.
@@ -144,6 +166,67 @@ def hangman(secret_word):
     
     Follows the other limitations detailed in the problem write-up.
     '''
+    user_guess=""
+    guessed_word=""
+    letters_guessed_so_far = ""
+    consonants="bcdfghjklmnpqrstvwxyz"
+    vowels="aeiou"
+    available=get_available_letters(letters_guessed_so_far)
+    word_len=len(secret_word)
+    guesses_remain=6
+    warning_remain=3
+    while (is_word_guessed(secret_word)!=True):
+        if guesses_remain!=0:
+            if guesses_remain==6 and warning_remain==3:
+                print("Welcome to Hangman the Game!")
+                print("The word i am thinking of is %d"%(word_len),"characters long.")
+            print("---------")
+            print("Number of Guesses left: %d"%(guesses_remain))
+            print("Available Letters: %s"%(available))
+            guess=input("Enter your guess here: ")
+            if str.isalpha(guess)==True:
+                #if its a letter
+                user_guess = str.lower(guess)
+                #make sure its lower case
+                if user_guess in available:
+                    letters_guessed_so_far+=user_guess
+                    #do something with the user_guess
+                    if is_letter_in_word(secret_word,user_guess)==True:
+                        available=get_available_letters(letters_guessed_so_far)
+                        guessed_word=get_guessed_word(secret_word,available)
+                        print("That is in the word.")
+                        #point?
+                    else:
+                        #not in the secret word, is it a vowel or a consonant?
+                        print("Thats not in the word. Try again.")
+                        if user_guess in consonants:
+                            guesses_remain -= 1
+                        elif user_guess in vowels:
+                            guesses_remain -= 2
+                        guessed_word = get_guessed_word(secret_word, available)
+                else:
+                    # the letter has been used before deduct points
+                    print("You have used this guess before")
+                    if warning_remain > 0:
+                        warning_remain -= 1
+                        # do you need to print saying they lost a warning or a guess?
+                    else:
+                        guesses_remain -= 1
+            elif str.isalpha(guess)==False:
+                print("Your entry is invalid please try again")
+                if warning_remain > 0:
+                    warning_remain-=1
+                    #do you need to print saying they lost a warning or a guess?
+                else:
+                    guesses_remain-=1
+            print("Word so Far: ", guessed_word)
+        else:
+            #print game over, print what the secret word is
+            print("No No No that is not the magic password. You lose.")
+            print("The correct word is:",secret_word)
+            break
+
+
     # FILL IN YOUR CODE HERE AND DELETE "pass"
     pass
 
