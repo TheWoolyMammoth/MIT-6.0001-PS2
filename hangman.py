@@ -129,6 +129,7 @@ def is_letter_in_word(secret_word,user_guess):
         return True
     else:
         return False
+
 def punishment(warnings,guesses):
     '''
     handles deducting points from warnings and guesses
@@ -140,6 +141,17 @@ def punishment(warnings,guesses):
     else:
         guesses -= 1
     return (warnings,guesses)
+
+def unique_letters(secret_word):
+    '''
+    used to help calculate the total score when the player wins
+    '''
+    alphabet=string.ascii_lowercase
+    count_of_letters=[]
+    for letter in alphabet:
+        if secret_word.count(letter)>0:
+            count_of_letters.append(secret_word.count(letter))
+    return len(count_of_letters)
 
 def hangman(secret_word):
     '''
@@ -175,12 +187,13 @@ def hangman(secret_word):
     word_len=len(secret_word)
     guesses_remain=6
     warning_remain=3
-    while (is_word_guessed(secret_word)!=True):
-        if guesses_remain!=0:
+    point=0
+    while True:
+        if guesses_remain>0:
             if guesses_remain==6 and warning_remain==3:
                 print("Welcome to Hangman the Game!")
                 print("The word i am thinking of is %d"%(word_len),"characters long.")
-            print("---------")
+            print("------------------------------------")
             print("Number of Guesses left: %d"%(guesses_remain))
             print("Available Letters: %s"%(available))
             guess=input("Enter your guess here: ")
@@ -192,10 +205,7 @@ def hangman(secret_word):
                     letters_guessed_so_far+=user_guess
                     #do something with the user_guess
                     if is_letter_in_word(secret_word,user_guess)==True:
-                        available=get_available_letters(letters_guessed_so_far)
-                        guessed_word=get_guessed_word(secret_word,available)
                         print("That is in the word.")
-                        #point?
                     else:
                         #not in the secret word, is it a vowel or a consonant?
                         print("Thats not in the word. Try again.")
@@ -203,7 +213,6 @@ def hangman(secret_word):
                             guesses_remain -= 1
                         elif user_guess in vowels:
                             guesses_remain -= 2
-                        guessed_word = get_guessed_word(secret_word, available)
                 else:
                     # the letter has been used before deduct points
                     print("You have used this guess before")
@@ -212,23 +221,36 @@ def hangman(secret_word):
                         # do you need to print saying they lost a warning or a guess?
                     else:
                         guesses_remain -= 1
+                available = get_available_letters(letters_guessed_so_far)
+                guessed_word=get_guessed_word(secret_word,letters_guessed_so_far)
+                print("Guess so Far: ", guessed_word)
             elif str.isalpha(guess)==False:
+                #not a valid entry
                 print("Your entry is invalid please try again")
                 if warning_remain > 0:
                     warning_remain-=1
                     #do you need to print saying they lost a warning or a guess?
                 else:
                     guesses_remain-=1
-            print("Word so Far: ", guessed_word)
         else:
             #print game over, print what the secret word is
             print("No No No that is not the magic password. You lose.")
             print("The correct word is:",secret_word)
             break
+        if is_word_guessed(secret_word, letters_guessed_so_far) == True:
+            print("Congratualations You Win!")
+            # function to calculate total points
+            point = guesses_remain * unique_letters(secret_word)
+            print("Your number of points earned for this game are: %d" % (point))
+            break
 
 
-    # FILL IN YOUR CODE HERE AND DELETE "pass"
-    pass
+    # # FILL IN YOUR CODE HERE AND DELETE "pass"
+    # pass
+#testing words before implementing random function below
+# testing_words = ["england","test","unibrow","roman","qualified"]
+# for test_word in testing_words:
+#     hangman(test_word)
 
 
 
@@ -310,7 +332,7 @@ def hangman_with_hints(secret_word):
 
 
 if __name__ == "__main__":
-    # pass
+    pass
 
     # To test part 2, comment out the pass line above and
     # uncomment the following two lines.
