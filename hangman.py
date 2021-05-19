@@ -263,21 +263,51 @@ def hangman(secret_word):
 # -----------------------------------
 
 
-
 def match_with_gaps(my_word, other_word):
     '''
     my_word: string with _ characters, current guess of secret word
     other_word: string, regular English word
-    returns: boolean, True if all the actual letters of my_word match the 
+    returns: boolean, True if all the actual letters of my_word match the
         corresponding letters of other_word, or the letter is the special symbol
         _ , and my_word and other_word are of the same length;
-        False otherwise: 
+        False otherwise:if your guess is "empty" it returns true so long as they are the same length
     '''
-    # FILL IN YOUR CODE HERE AND DELETE "pass"
-    pass
+    # different version of match with gaps. will probably use this one more.
+    # need to resolve the double letter issue.
+    break_term = ""
+    stripped_word = my_word.replace(" ","")
+    bare_letters =stripped_word.replace("_","")
+    available_letters=get_available_letters(bare_letters)
+    t_or_f = False
+    if len(stripped_word) == len(other_word):
+        for x in range(0,len(stripped_word)):
+            #print(stripped_word[x],other_word[x],stripped_word[x]==other_word[x])
+            if stripped_word[x]=="_":
+                if available_letters.count(other_word[x])==1:
+                    continue
+                else:
+                    t_or_f=False
+                    break
+            elif stripped_word[x]==other_word[x]:
+                t_or_f=True
+            else:
+                t_or_f=False
+                break
+    else:
+        t_or_f = False
+    return t_or_f
 
+#testing for the function match_with_gaps(). worked as of 05/17/2021. testing
+# print(match_with_gaps("tr_ _ t","tract"))
+# print(match_with_gaps("tr_ _ t","yellow"))
+# print(match_with_gaps("tra_ g","train"))
+# print(match_with_gaps("franc _ shca","franceshca"))
+# print(match_with_gaps("_ _ m","yellow"))
+# print(match_with_gaps("app_ e","train"))
+# print(match_with_gaps("t_ e","tie"))
+# print(match_with_gaps("_ b_ _ _ ","train"))
 
-
+#test_list=["about","tract","yellow","train","franceshca","tie","tom"]
 def show_possible_matches(my_word):
     '''
     my_word: string with _ characters, current guess of secret word
@@ -286,11 +316,25 @@ def show_possible_matches(my_word):
              at which that letter occurs in the secret word are revealed.
              Therefore, the hidden letter(_ ) cannot be one of the letters in the word
              that has already been revealed.
-
     '''
-    # FILL IN YOUR CODE HERE AND DELETE "pass"
-    pass
-
+    matched_terms=[]
+    match_string=" "
+    for term in wordlist:
+        if match_with_gaps(my_word,term) == True:
+            matched_terms.append(term)
+    if matched_terms == []:
+        print("No matches found")
+    else:
+        print("Possible word matches are: ")
+        print(match_string.join(matched_terms))
+    # # FILL IN YOUR CODE HERE AND DELETE "pass"
+    # pass
+# testing show_possible_matches() and
+# show_possible_matches("_ b_ _ t")
+# show_possible_matches("t_ m")
+# show_possible_matches("a_ pl_ ")
+# show_possible_matches("t_ _ t")
+# show_possible_matches("_ b_ _ ")
 
 
 def hangman_with_hints(secret_word):
@@ -320,6 +364,74 @@ def hangman_with_hints(secret_word):
     
     Follows the other limitations detailed in the problem write-up.
     '''
+    user_guess=""
+    guessed_word=""
+    letters_guessed_so_far = ""
+    consonants="bcdfghjklmnpqrstvwxyz"
+    vowels="aeiou"
+    available=get_available_letters(letters_guessed_so_far)
+    word_len=len(secret_word)
+    guesses_remain=6
+    warning_remain=3
+    point=0
+    while True:
+        if guesses_remain>0:
+            if guesses_remain==6 and warning_remain==3:
+                print("Welcome to Hangman the Game!")
+                print("The word i am thinking of is %d"%(word_len),"characters long.")
+            print("------------------------------------")
+            print("Number of Guesses left: %d"%(guesses_remain))
+            print("Available Letters: %s"%(available))
+            guess=input("Enter your guess here: ")
+            if guess == "*":
+                show_possible_matches(guessed_word)
+            else:
+                if str.isalpha(guess)==True:
+                    #if its a letter
+                    user_guess = str.lower(guess)
+                    #make sure its lower case
+                    if user_guess in available:
+                        letters_guessed_so_far+=user_guess
+                        #do something with the user_guess
+                        if is_letter_in_word(secret_word,user_guess)==True:
+                            print("That is in the word.")
+                        else:
+                            #not in the secret word, is it a vowel or a consonant?
+                            print("Thats not in the word. Try again.")
+                            if user_guess in consonants:
+                                guesses_remain -= 1
+                            elif user_guess in vowels:
+                                guesses_remain -= 2
+                    else:
+                        # the letter has been used before deduct points
+                        print("You have used this guess before")
+                        if warning_remain > 0:
+                            warning_remain -= 1
+                            # do you need to print saying they lost a warning or a guess?
+                        else:
+                            guesses_remain -= 1
+                    available = get_available_letters(letters_guessed_so_far)
+                    guessed_word=get_guessed_word(secret_word,letters_guessed_so_far)
+                    print("Guess so Far: ", guessed_word)
+                elif str.isalpha(guess)==False:
+                    #not a valid entry
+                    print("Your entry is invalid please try again")
+                    if warning_remain > 0:
+                        warning_remain-=1
+                        #do you need to print saying they lost a warning or a guess?
+                    else:
+                        guesses_remain-=1
+        else:
+            #print game over, print what the secret word is
+            print("No No No that is not the magic password. You lose.")
+            print("The correct word is:",secret_word)
+            break
+        if is_word_guessed(secret_word, letters_guessed_so_far) == True:
+            print("Congratualations You Win!")
+            # function to calculate total points
+            point = guesses_remain * unique_letters(secret_word)
+            print("Your number of points earned for this game are: %d" % (point))
+            break
     # FILL IN YOUR CODE HERE AND DELETE "pass"
     pass
 
@@ -337,13 +449,13 @@ if __name__ == "__main__":
     # To test part 2, comment out the pass line above and
     # uncomment the following two lines.
     
-    secret_word = choose_word(wordlist)
-    hangman(secret_word)
+    # secret_word = choose_word(wordlist)
+    # hangman(secret_word)
 
 ###############
     
     # To test part 3 re-comment out the above lines and 
     # uncomment the following two lines. 
     
-    #secret_word = choose_word(wordlist)
-    #hangman_with_hints(secret_word)
+    secret_word = choose_word(wordlist)
+    hangman_with_hints(secret_word)
